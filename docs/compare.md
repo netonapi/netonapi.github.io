@@ -2,7 +2,7 @@
 aside: false
 ---
 
-# 对照 new-api / one-api
+# 对比 new-api / one-api
 
 NetonAPI 不是在 one-api / new-api 上改出来的分支，而是从**运营平台**的角度重新设计：定价以官方价为锚、每条渠道核算真实成本、
 亏本的价格保存不了、每一笔扣费都能按「单价 × tokens」逐笔对上。下表对照的是两个最主流的开源中转站项目。

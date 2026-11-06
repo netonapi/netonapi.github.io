@@ -24,7 +24,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "指南", link: "/guide/what-is" },
-          { text: "对照 new-api / one-api", link: "/compare" },
+          { text: "对比", link: "/compare" },
           { text: "发布说明", link: "/releases/1.0.0" },
           { text: "在线体验", link: CLOUD },
         ],
@@ -39,7 +39,7 @@ export default defineConfig({
                 { text: "功能一览", link: "/guide/features" },
               ],
             },
-            { text: "更多", items: [{ text: "对照 new-api / one-api", link: "/compare" }, { text: "1.0.0 发布说明", link: "/releases/1.0.0" }] },
+            { text: "更多", items: [{ text: "对比", link: "/compare" }, { text: "1.0.0 发布说明", link: "/releases/1.0.0" }] },
           ],
         },
         outline: { label: "本页目录" },
@@ -56,13 +56,13 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "Guide", link: "/en/guide/what-is" },
-          { text: "vs new-api / one-api", link: "/en/compare" },
+          { text: "Compare", link: "/en/compare" },
           { text: "Try it", link: CLOUD },
         ],
         sidebar: {
           "/en/guide/": [
             { text: "Guide", items: [{ text: "What is NetonAPI", link: "/en/guide/what-is" }, { text: "Quick start", link: "/en/guide/quick-start" }] },
-            { text: "More", items: [{ text: "vs new-api / one-api", link: "/en/compare" }] },
+            { text: "More", items: [{ text: "Compare", link: "/en/compare" }] },
           ],
         },
         footer: { message: "Apache-2.0 · Neton Cloud is an API relay platform built on NetonAPI", copyright: "© 2026 NetonAPI" },

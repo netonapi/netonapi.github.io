@@ -74,6 +74,6 @@ features:
 | API Key | 只显示一次，只存哈希 | 可随时查看 | 可随时查看 |
 | 部署 | 单个原生可执行文件 | Go / Docker | Go / Docker |
 
-[查看完整对照 →](/compare)
+[查看完整对比 →](/compare)
 
 </div>
