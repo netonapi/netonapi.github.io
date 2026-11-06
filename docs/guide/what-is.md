@@ -1,39 +1,35 @@
-# 什么是 NetonAPI
+# What is NetonAPI
 
-NetonAPI 是一个开源、自托管的大模型 API 中转站。你把采购来的上游账号（OpenAI、Anthropic、Google、国内厂商或别的中转站）接进来，
-给自己的用户发 API Key、按 token 计费；用户用一个 Key 就能调用所有主流模型，官方 SDK 和 Claude Code 这类工具改个地址就能用。
+NetonAPI is an open-source, self-hosted relay for large-model APIs. You connect the upstream accounts you buy
+(OpenAI, Anthropic, Google, Chinese vendors or other relays), issue your own API keys to your users and bill them per token.
+Users call every major model with one key; official SDKs and tools such as Claude Code only need a new base URL.
 
-它自带两个界面：
+It ships with two interfaces:
 
-- **管理后台**：给运营用。管渠道、管定价、给大客户谈价、看收入成本毛利、处理账务。
-- **网站与用户控制台**：给买家用。注册登录、看模型与价格、创建 API Key、看用量与账单、充值。
+- **Admin console** for operators: channels, pricing, negotiated prices for key accounts, revenue / cost / margin, ledger review.
+- **Website and user console** for buyers: sign-up, models and prices, API keys, usage and billing, top-up.
 
-[Neton Cloud](https://neton.cloud) 就是用 NetonAPI 运营的一个中转站，可以直接注册看看实际效果。
+[Neton Cloud](https://neton.cloud) is a relay run on NetonAPI — sign up to see it in action.
 
-## 和别的中转站有什么不一样
+## What is different
 
-大多数开源中转站从「把请求转出去」出发，计费是在转发上叠加几层倍率。
-真正运营一个中转站，每天操心的是另外几件事：
+Most open-source relays start from "forward the request" and add billing as stacked ratios on top.
+Running a relay as a business is about other questions: what does each model sell for, what does it cost me,
+did this request make money, will the discount I gave a key account lose money on some channel, and does the user's bill match the price they saw?
 
-- 每个模型卖多少钱？拿货多少钱？这一单赚没赚？
-- 给大客户打的折扣，会不会在某条渠道上卖亏？
-- 用户看到的价格和他的账单对不对得上？
-
-NetonAPI 从一开始就围绕这几个问题设计：
-
-| 运营的问题 | NetonAPI 的做法 |
+| Operator question | NetonAPI |
 |---|---|
-| 售价怎么定 | 以官方价为锚：售价 = 官方价 × 加价率；优惠写成「官方价 N 折」，官方价调整时自动跟随 |
-| 拿货价是多少 | 每条渠道记录真实成本：官方价折扣、自动拉上游中转站的价目、或按模型手填 |
-| 会不会卖亏 | 任何定价保存前按真实会走的每条渠道核算毛利，低于成本直接拒绝 |
-| 账对不对得上 | 扣费 = tokens × 用户看到的单价，价格页、控制台、账单是同一个数 |
-| 出了故障怎么办 | 先预留、后结算；进程崩溃自动恢复，说不清的账进人工复核，不会重复扣费 |
+| How is the price set? | Anchored to the official price: sale = official × markup; discounts are "N% of official" and follow official price changes |
+| What does it cost me? | Every channel records real cost: official × discount, pulled from an upstream relay's price API, or entered per model |
+| Can I sell at a loss? | Every price is checked against each channel that would serve it; below cost is refused |
+| Does the bill match? | Charge = tokens × the unit price the user sees |
+| What if something crashes? | Reserve then settle; crashes recover, unclear cases go to manual review, nothing is double-charged |
 
-## 技术形态
+## Under the hood
 
-- 服务端用 Kotlin/Native 编译成**单个原生可执行文件**，运行时不需要 JVM。
-- 数据库只用 PostgreSQL；Redis 可选（多实例时共享限流）。
-- 管理后台与网站前端是两个 Next.js 应用。
-- 许可：Apache-2.0。
+- Server compiled with Kotlin/Native into **a single native executable** — no JVM at runtime.
+- PostgreSQL only; Redis optional (shared rate limits across instances).
+- Two Next.js apps for the admin console and the website.
+- License: Apache-2.0.
 
-下一步：[快速开始](./quick-start) · [定价与毛利](./pricing) · [功能一览](./features)
+Next: [Quick start](./quick-start) · [Pricing and margin](./pricing) · [Features](./features)

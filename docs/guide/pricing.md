@@ -1,52 +1,55 @@
-# 定价与毛利
+# Pricing and margin
 
-NetonAPI 的定价只有一个锚点：**官方价**。所有价格都写成「官方价的多少」，客户好比价，运营好算账。
+NetonAPI prices have a single anchor: **the official price**. Every price is written as "a share of the official price",
+so customers can compare easily and operators can do the math.
 
-## 用户看到的价格怎么来
+## Where a user's price comes from
 
-一个用户调用某个模型时，价格按下面顺序找，找到哪层就用哪层：
+When a user calls a model, the price is looked up in this order and the first match wins:
 
-| 层级 | 什么时候用 | 写法 |
+| Layer | When it applies | How it is written |
 |---|---|---|
-| 协议价 | 运营给**这个用户**单独谈了这个模型 | 官方价 N 折，例如 85 折 |
-| 分组价 | 他的 API Key 属于某个计费分组（如企业客户、专线） | 分组倍率，或分组里按模型定价 |
-| 全站价 | 以上都没有 | 官方价 × 全站加价率（也可以给某个模型单独设） |
+| Negotiated price | The operator negotiated this model for **this user** | N% of official, e.g. 85% |
+| Group price | The user's API key belongs to a billing group (enterprise, dedicated line…) | A group ratio, or per-model prices inside the group |
+| Site price | None of the above | Official × site markup (a model can have its own markup) |
 
-用户在控制台「模型与价格」里能看到每个模型自己的价格、相当于官方价几折、是不是协议价；
-运营在后台「协议定价」里能看到这个用户每个模型的价格来自哪一层。
+In the console, users see each model's price, what share of the official price it is, and whether it is a negotiated price.
+In the admin console, the Negotiated Pricing page shows which layer each of that user's prices comes from.
 
-## 一个例子
+## An example
 
-假设 Claude Sonnet 官方价是输入 $3 / 输出 $15（每百万 tokens），全站加价率 1.0（按官方价卖）：
+Say Claude Sonnet's official price is $3 input / $15 output per million tokens and the site markup is 1.0 (selling at official price):
 
-- 普通用户：输入 $3、输出 $15。
-- 企业分组倍率 0.95：输入 $2.85、输出 $14.25。
-- 给大客户 Acme 谈了 85 折协议价：输入 $2.55、输出 $12.75。
+- A regular user pays $3 / $15.
+- The enterprise group has ratio 0.95: $2.85 / $14.25.
+- Key account Acme negotiated 85%: $2.55 / $12.75.
 
-Acme 调用一次，输入 10,000 tokens、输出 2,000 tokens，扣费就是
-`10,000 × 2.55 / 1,000,000 + 2,000 × 12.75 / 1,000,000 = $0.051`，和他在控制台看到的单价一算就对得上。
+One Acme request with 10,000 input and 2,000 output tokens is charged
+`10,000 × 2.55 / 1,000,000 + 2,000 × 12.75 / 1,000,000 = $0.051` — exactly what the unit prices in their console add up to.
 
-## 为什么不会卖亏
+## Why you can't sell at a loss
 
-每条上游渠道都记着自己的拿货价，例如「OpenAI 官方 82 折」「合作中转站 55 折」。
-保存任何价格前（全站价、分组价、协议价），NetonAPI 都会把这个价格放到**真实会走的每条渠道**上算一遍毛利：
+Every upstream channel records its own cost, e.g. "OpenAI direct at 82% of official" or "partner relay at 55%".
+Before any price is saved — site, group or negotiated — NetonAPI checks the margin on **every channel that would actually serve it**:
 
-- 低于成本：保存不了，提示是哪个分组、哪条渠道、哪一项亏了；
-- 低于你设的最低毛利：同样拒绝。
+- Below cost: the price can't be saved, and you are told which group, channel and price component loses money.
+- Below your minimum margin: also refused.
 
-如果上面的例子里承载 Claude 的渠道拿货价是 9 折，那 85 折的协议价就保存不了——要么换更便宜的渠道，要么少打点折。
+In the example above, if the channel carrying Claude costs 90% of official, the 85% negotiated price can't be saved —
+use a cheaper channel or give a smaller discount.
 
-「模型定价」列表会直接显示每个模型在所有「分组 × 渠道」组合里的**最差毛利**，亏本标红；概览页按分组、渠道统计收入、成本与毛利。
+The model pricing list shows each model's **worst margin** across all group × channel combinations, with losses in red;
+the overview breaks down revenue, cost and margin by group and channel.
 
-## 官方价变了怎么办
+## When the official price changes
 
-NetonAPI 定时从公开价源（默认与 new-api 同源，也可换 models.dev、LiteLLM、OpenRouter）拉取最新官方价，
-逐个列出涨跌，由运营确认后应用。因为所有价格都是「官方价的多少」，官方价一更新，全站价、分组价、协议价都会自动跟着走，
-给客户的「85 折」承诺一直成立。
+NetonAPI periodically pulls official prices from a public source (the same one new-api uses by default; models.dev, LiteLLM or
+OpenRouter also work), lists every increase and decrease, and applies them after an operator confirms. Because every price is a share of
+the official price, site, group and negotiated prices all follow automatically — the "85%" you promised a customer stays true.
 
-## 一些细节
+## Details
 
-- **缓存**：缓存读写分别计价；上游没给缓存价时按输入价计，不会白送缓存命中。
-- **按次、长上下文**：图片等模型可以按次计价；长上下文模型支持按输入长度分档。
-- **账务**：每次请求先按上限预留额度，结束后按实际用量结算，定价快照随请求冻结，中途改价不影响在途请求。
-- **调价记录**：每一次改价都记下谁、什么时候、从多少改成多少。
+- **Cache**: cache reads and writes are priced separately; when an upstream has no cache price, cached tokens are billed at the input price, never given away.
+- **Per call and long context**: image models can be priced per call; long-context models can be tiered by input length.
+- **Ledger**: each request reserves an upper bound first and settles on actual usage, with the price snapshot frozen per request — price changes never affect in-flight requests.
+- **Price history**: every change records who, when, and from what to what.

@@ -2,38 +2,34 @@
 aside: false
 ---
 
-# 对比 new-api / one-api
+# NetonAPI vs new-api / one-api
 
-NetonAPI 不是在 one-api / new-api 上改出来的分支，而是从**运营平台**的角度重新设计：定价以官方价为锚、每条渠道核算真实成本、
-亏本的价格保存不了、每一笔扣费都能按「单价 × tokens」逐笔对上。下表对照的是两个最主流的开源中转站项目。
+NetonAPI is not a fork of one-api / new-api. It was designed from the **operator's** side: prices are anchored to the official
+price, every channel carries its real cost, a price that would lose money cannot be saved, and every charge reconciles as
+"unit price × tokens". The table compares it with the two most widely used open-source relay projects.
 
-| 能力 | NetonAPI 1.0 | [new-api](https://github.com/QuantumNous/new-api) | [one-api](https://github.com/songquanpeng/one-api) |
+| Capability | NetonAPI 1.0 | [new-api](https://github.com/QuantumNous/new-api) | [one-api](https://github.com/songquanpeng/one-api) |
 |---|---|---|---|
-| **定价方式** | 以官方价为锚：售价 = 官方价 × 加价率；分组、单个用户都可按模型谈「官方价 N 折」 | 倍率体系：模型倍率 × 补全倍率 × 分组倍率；按次固定价；分档表达式定价 | 倍率体系：分组倍率 × 模型倍率 × 补全倍率 |
-| **按用户 × 模型的协议价** | 有（「协议定价」页：搜用户、逐模型打折、可批量） | 按用户分组倍率区分 | 按用户分组倍率区分 |
-| **渠道真实成本** | 每条渠道记录拿货价（官方价折扣 / 拉取上游价目接口 / 按模型手填），异常变动挂起待确认 | 公开文档未涉及 | 公开文档未涉及 |
-| **毛利保护** | 售价低于渠道成本的定价**保存不了**；定价体检列出每个「分组 × 渠道」的最差毛利；利润看板 | 公开文档未涉及 | 公开文档未涉及 |
-| **官方价维护** | 定时从价源同步官方价，涨跌先挂起由运营确认，完整调价记录 | 倍率设置，可同步上游倍率 | 内置默认倍率，手动调整 |
-| **扣费与展示** | 扣费 = tokens × 用户看到的单价（逐项取整），控制台、价格表、账单三处一致；缓存价缺失时按输入价计，不白送缓存命中 | 预扣后按实际用量多退少补 | 预扣后按实际用量结算 |
-| **账务** | 预留 → 结算两阶段，进程崩溃可恢复，异常进入人工复核队列；每笔请求冻结定价快照 | 预扣 + 后结算 | 预扣 + 后结算 |
-| **计费分组** | 由 API Key 决定：运营可直接指定到某把 Key（专线 / 特价） | 用户分组，令牌可选分组 | 用户分组、渠道分组 |
-| **API Key 安全** | 只在创建时显示一次，库里只存哈希；渠道上游 Key 加密存储 | 列表中可查看、复制 | 列表中可查看、复制 |
-| **接入协议** | OpenAI（Chat、Responses）、Anthropic、Gemini 原生入口，**任意方向互转**（工具调用、图片、thinking、缓存用量保真） | OpenAI Chat、Responses、Anthropic、Gemini 四种文本协议互转；另有 Realtime WebSocket | 统一为 OpenAI 格式 |
-| **上游类型** | OpenAI 兼容站、Azure OpenAI、Anthropic、Gemini、AWS Bedrock、Vertex AI | 数十种，含国内外厂商 | 30 余家国内外厂商 |
-| **渠道容错** | 优先级 + 权重；失败自动换渠道；上游说「没有这个模型」时换渠道而不是报错给用户；Key 自动停用与冷却；定时测速 | 优先级 + 权重、重试、渠道亲和、多 Key | 负载均衡、失败重试、按成功率自动禁用 |
-| **任务类接口**（Midjourney、视频等） | 暂不支持 | 支持（JS 插件扩展） | 不支持 |
-| **运营权限** | 菜单与按钮级权限，预置网关运营 / 财务 / 客服 / 只读四个角色 | 细粒度权限 | 管理员 / 超级管理员 |
-| **用户登录** | 账号密码、手机验证码（需配短信）、邮箱找回密码 | OAuth / OIDC、Passkey、两步验证 | 邮箱、GitHub、飞书、微信公众号 |
-| **充值** | 管理员手动充值、兑换码、在线支付（支付宝、四方支付，可扩展）；支付密钥只写不读 | 兑换码、易支付、Stripe、订阅 | 兑换码、充值链接 |
-| **实现与部署** | Kotlin/Native **单个原生可执行文件**，运行期无 JVM；PostgreSQL（Redis 可选） | Go 单二进制 / Docker；SQLite / MySQL / PostgreSQL | Go 单二进制 / Docker；SQLite / MySQL |
-| **项目状态** | 1.0.0 正式版 | 持续发布（v1.0.0-rc 系列） | 最新版本 v0.6.10（2025-02），此后无新版本 |
+| **Pricing** | Anchored to the official price: sale = official × markup; groups and individual users can get "N% of official" per model | Ratio system: model ratio × completion ratio × group ratio; fixed per-request price; tiered expression pricing | Ratio system: group ratio × model ratio × completion ratio |
+| **Per-user, per-model negotiated price** | Yes ("Negotiated pricing": find a user, discount model by model, in bulk) | Via user group ratio | Via user group ratio |
+| **Real channel cost** | Each channel records its cost (official × discount / upstream pricing API / per-model manual); abnormal jumps wait for approval | Not covered in public docs | Not covered in public docs |
+| **Margin protection** | A price below channel cost **cannot be saved**; price health check shows the worst margin per group × channel; profit dashboard | Not covered in public docs | Not covered in public docs |
+| **Official price upkeep** | Scheduled sync from a price source; changes held for operator approval; full price history | Ratio settings, can sync upstream ratios | Built-in default ratios, edited by hand |
+| **Charge vs. displayed price** | Charge = tokens × the unit price the user sees (rounded per item); console, price list and bill agree; unknown cache price bills at input price | Pre-deduct, then settle the difference | Pre-deduct, then settle |
+| **Ledger** | Two-phase reserve → settle, crash-recoverable, anomalies go to a manual review queue; price snapshot frozen per request | Pre-deduct + post-settle | Pre-deduct + post-settle |
+| **Billing group** | Decided by the API key; operators can pin a key to a group (dedicated route / special price) | User group, selectable per token | User and channel groups |
+| **API key handling** | Shown once at creation, only a hash is stored; upstream keys encrypted at rest | Viewable and copyable in the list | Viewable and copyable in the list |
+| **Inbound protocols** | Native OpenAI (Chat, Responses), Anthropic and Gemini endpoints, **converted in any direction** (tools, images, thinking, cache usage preserved) | Conversion among OpenAI Chat, Responses, Anthropic and Gemini; Realtime WebSocket | Unified to the OpenAI format |
+| **Upstream types** | OpenAI-compatible, Azure OpenAI, Anthropic, Gemini, AWS Bedrock, Vertex AI | Dozens, domestic and international | 30+ providers |
+| **Channel failover** | Priority + weight; automatic failover; an upstream "model not found" moves to the next channel instead of failing the user; key auto-disable and cooldown; scheduled probes | Priority + weight, retries, channel affinity, multiple keys | Load balancing, retries, auto-disable by success rate |
+| **Task APIs** (Midjourney, video…) | Not yet | Yes (JavaScript plugins) | No |
+| **Operator permissions** | Menu- and button-level permissions; preset gateway ops / finance / support / read-only roles | Fine-grained permissions | Admin / root |
+| **User sign-in** | Username and password, SMS code (needs an SMS provider), email password reset | OAuth / OIDC, passkeys, 2FA | Email, GitHub, Feishu, WeChat |
+| **Top-up** | Manual top-up by admins, redemption codes, online payment (Alipay, aggregators, pluggable); payment secrets write-only | Redemption codes, EPay, Stripe, subscriptions | Redemption codes, top-up link |
+| **Build and deploy** | Kotlin/Native **single native executable**, no JVM at runtime; PostgreSQL (Redis optional) | Go binary / Docker; SQLite / MySQL / PostgreSQL | Go binary / Docker; SQLite / MySQL |
+| **Status** | 1.0.0 | Releasing continuously (v1.0.0-rc series) | Latest release v0.6.10 (2025-02), none since |
 
-new-api、one-api 两列依据各自公开的 README 与文档整理（2026-11），「公开文档未涉及」表示没有找到相关说明，不代表一定没有；细节以对方最新版本为准。
+The new-api and one-api columns are compiled from their public READMEs and documentation (2026-11). "Not covered in public docs" means
+we found no description, not that the feature certainly does not exist; check their latest releases for details.
 
-## 什么时候选哪个
-
-- **你要运营一个中转站、关心每一单赚不赚钱、要给大客户谈价**：选 NetonAPI。
-- **你需要 Midjourney、视频生成等任务类接口，或者要接非常多的小众厂商**：new-api 目前覆盖更广。
-- **你只要一个轻量的统一转发、不太在意成本核算**：one-api 足够简单。
-
-想先看 NetonAPI 跑起来的样子，去 [Neton Cloud](https://neton.cloud) 注册试用。
+Want to see NetonAPI running? Sign up at [Neton Cloud](https://neton.cloud).

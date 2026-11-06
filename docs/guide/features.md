@@ -1,56 +1,56 @@
-# 功能一览
+# Features
 
-## 接入
+## Endpoints
 
-- OpenAI：Chat Completions、Responses、Embeddings、Images、Audio、Rerank
-- Anthropic Messages、Gemini 原生接口
-- 三种协议**任意方向互转**，工具调用、图片、thinking、缓存用量都能保真；流式与非流式全覆盖
-- Claude Code、各家官方 SDK 直接可用
+- OpenAI: Chat Completions, Responses, Embeddings, Images, Audio, Rerank
+- Anthropic Messages and native Gemini
+- Conversion between the three protocols **in any direction**, preserving tool calls, images, thinking and cache usage; streaming and non-streaming
+- Claude Code and official SDKs work out of the box
 
-## 上游与路由
+## Upstreams and routing
 
-- 上游类型：OpenAI 兼容站（包括各类中转站）、Azure OpenAI、Anthropic、Gemini、AWS Bedrock、Vertex AI
-- 优先级 + 权重路由，失败自动换渠道；上游说「没有这个模型」也会换渠道，而不是把错误甩给用户
-- 渠道 Key 自动停用与冷却，定时测速，长回答不截断
-- 出站地址校验，防 SSRF
+- Upstream types: OpenAI-compatible (including other relays), Azure OpenAI, Anthropic, Gemini, AWS Bedrock, Vertex AI
+- Priority + weight routing with automatic failover; when an upstream says "no such model", the request moves to another channel instead of failing
+- Automatic key suspension and cooldown, scheduled latency probes, long answers never cut off
+- Outbound address checks against SSRF
 
-## 定价与账务
+## Pricing and ledger
 
-- 以官方价为锚：全站价、分组价、协议价三层（见 [定价与毛利](./pricing)）
-- 每条渠道记录真实成本，亏本的价格保存不了；定价体检、利润看板
-- 按 token、按次、长上下文分档计价；缓存读写分别计价
-- 两阶段账务：预留 → 结算，崩溃可恢复，异常进人工复核
-- 官方价定时同步与校准，完整调价记录
+- Anchored to the official price: site, group and negotiated prices (see [Pricing and margin](./pricing))
+- Real cost per channel; loss-making prices can't be saved; pricing health check and profit dashboard
+- Per-token, per-call and long-context tiers; cache reads and writes priced separately
+- Two-phase ledger: reserve → settle, crash recovery, manual review for unclear cases
+- Scheduled official price sync and calibration, full price history
 
-## 运营后台
+## Admin console
 
-- 网关概览：收入、成本、毛利，每日趋势，模型与用户排行，渠道健康
-- 协议定价：搜一个用户，逐模型或批量设「官方价 N 折」，实时显示毛利
-- 计费分组由 API Key 决定：专线、特价直接指定到某把 Key
-- 用量日志、结算复核、余额流水
-- 菜单与按钮级权限，预置网关运营、财务、客服、只读四个角色；管理员两步验证、后台 IP 白名单
-- Prometheus 指标
+- Gateway overview: revenue, cost, margin, daily trend, top models and users, channel health
+- Negotiated pricing: find a user, set "N% of official" per model or in bulk, see the margin live
+- Billing group decided by API key: dedicated lines and special rates attach to a specific key
+- Usage logs, settlement review, balance ledger
+- Menu- and button-level permissions with four preset roles (gateway ops, finance, support, read-only); admin 2FA and IP allowlist
+- Prometheus metrics
 
-## 用户侧
+## For users
 
-- 注册登录：账号密码、手机验证码、邮箱找回密码
-- API Key 自助管理：预算、有效期、模型范围、IP 白名单；**Key 只在创建时显示一次**，库里只存哈希
-- 模型与价格表、用量与账单、接入说明
+- Sign-up and login: username + password, SMS code, email password reset
+- Self-service API keys: budget, expiry, model scope, IP allowlist; **a key is shown only once at creation** and only its hash is stored
+- Model and price list, usage and billing, integration guide
 
-## 收款
+## Payments
 
-- 管理员手动充值、兑换码
-- 在线支付：支付宝、四方支付，可扩展；支付密钥只写不读
-- 邀请奖励
+- Manual top-up by admins, redemption codes
+- Online payment: Alipay and aggregated payment providers, extensible; payment secrets are write-only
+- Referral rewards
 
-## 部署
+## Deployment
 
-- 单个原生可执行文件，运行时无 JVM
-- PostgreSQL；Redis 可选
-- 官方备份脚本与定时任务，支持同步到对象存储
+- A single native executable, no JVM at runtime
+- PostgreSQL; Redis optional
+- Official backup script and timer, with optional sync to object storage
 
-## 暂不支持
+## Not supported yet
 
-- Midjourney、Suno、视频生成等任务类接口
-- 用户侧第三方登录（GitHub、OIDC 等）
-- PostgreSQL 以外的数据库
+- Task-style APIs such as Midjourney, Suno and video generation
+- Third-party login for users (GitHub, OIDC…)
+- Databases other than PostgreSQL
