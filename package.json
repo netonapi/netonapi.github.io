@@ -1,0 +1,13 @@
+{
+  "name": "netonapi-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs --port 5180",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs --port 5181"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}
